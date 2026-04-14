@@ -1,16 +1,59 @@
-# React + Vite
+# 📱 Офлайн-трекер звичок (Progressive Web App)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Цей проєкт — демонстраційний веб-застосунок (PWA), створений у рамках навчально-дослідницької роботи. Він демонструє сучасні можливості веб-технологій: роботу без підключення до інтернету (Offline-first), кешування ресурсів за допомогою Service Worker та можливість встановлення на пристрій як повноцінної нативної програми.
 
-Currently, two official plugins are available:
+## 🚀 Основний функціонал
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Офлайн-режим:** Застосунок повністю працює без інтернету. Всі дані миттєво зберігаються у внутрішню базу даних браузера (IndexedDB).
+- **Встановлення (Add to Home Screen):** Застосунок можна встановити на смартфон або десктоп прямо з браузера (через власну кнопку або меню браузера).
+- **Відстеження прогресу:** Візуалізація виконання звичок за останні 7 днів.
+- **Управління звичками:** Створення, відмітка виконання та видалення звичок.
 
-## React Compiler
+## 🛠 Стек технологій
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Фронтенд:** React.js
+- **Збірка:** Vite
+- **PWA Інструменти:** `vite-plugin-pwa` (на базі Workbox)
+- **База даних:** `localforage` (асинхронне сховище на базі IndexedDB)
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 💻 Інструкція зі встановлення та запуску
+
+Щоб розгорнути проєкт локально на своєму комп'ютері, виконайте наступні кроки.
+
+### 1. Попередні вимоги
+Переконайтеся, що на вашому комп'ютері встановлено [Node.js](https://nodejs.org/) (разом із пакетним менеджером `npm`).
+
+### 2. Ініціалізація проєкту
+Відкрийте термінал у папці з проєктом та встановіть всі необхідні залежності. 
+*(Примітка: використовується прапорець `--legacy-peer-deps` для уникнення конфліктів версій між Vite 8 та PWA-плагіном).*
+
+```bash
+npm install --legacy-peer-deps
+```
+
+## 💻 Запуск, збірка та тестування
+### 1. Режим розробки (Development)
+Використовується для написання коду. Зміни миттєво відображаються в браузері (Hot Reload).
+
+```bash
+npm run dev
+```
+Локальний сервер: http://localhost:5173/
+
+### 2. Збірка проєкту (Production Build)
+Підготовка проєкту до релізу. Інструмент Vite компілює React-код, мініфікує файли та повноцінно генерує Service Worker для офлайн-роботи.
+```bash
+npm run build
+```
+
+### 3. Тестування PWA (Preview)
+Симуляція реального продакшен-хостингу для перевірки готової збірки. Саме в цьому режимі необхідно тестувати встановлення застосунку та роботу без інтернету.
+
+```bash
+npm run preview
+```
+Локальний сервер: http://localhost:4173/
+
+
