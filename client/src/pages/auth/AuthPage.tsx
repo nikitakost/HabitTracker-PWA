@@ -1,7 +1,10 @@
+import { useNetworkStatus } from '@/shared/lib';
+import { Alert, Card } from '@/shared/ui';
 import { useAuthForm } from '@/features/auth';
 import { AuthPanel } from '@/widgets/auth/AuthPanel';
 
 export const AuthPage = () => {
+  const isOnline = useNetworkStatus();
   const {
     error,
     handleSubmit,
@@ -52,17 +55,34 @@ export const AuthPage = () => {
         </section>
 
         <section className="flex justify-center lg:justify-end">
-          <AuthPanel
-            error={error}
-            isLogin={isLogin}
-            isSubmitting={isSubmitting}
-            onPasswordChange={setPassword}
-            onSubmit={handleSubmit}
-            onToggleMode={toggleMode}
-            onUsernameChange={setUsername}
-            password={password}
-            username={username}
-          />
+          {!isOnline ? (
+            <Card className="max-w-md w-full z-10 px-8 py-9 sm:px-10">
+              <div className="text-[11px] uppercase tracking-[0.35em] text-muted font-bold mb-3">
+                Offline mode
+              </div>
+              <h2 className="font-display text-4xl font-bold tracking-tight text-dark">
+                Login needs one online session first
+              </h2>
+              <p className="mt-4 leading-7 text-muted">
+                Offline mode is available after first login. Connect to the internet once, sign in, and then your habits will keep opening from local storage.
+              </p>
+              <Alert variant="warning" className="mt-6">
+                No saved account was found on this device, so the app cannot verify identity while offline.
+              </Alert>
+            </Card>
+          ) : (
+            <AuthPanel
+              error={error}
+              isLogin={isLogin}
+              isSubmitting={isSubmitting}
+              onPasswordChange={setPassword}
+              onSubmit={handleSubmit}
+              onToggleMode={toggleMode}
+              onUsernameChange={setUsername}
+              password={password}
+              username={username}
+            />
+          )}
         </section>
       </div>
     </div>

@@ -15,6 +15,7 @@ export const syncHabitsSchema = z.object({
         title: z.string().min(1, 'Title is required'),
         completedDates: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format')),
         updatedAt: z.number().optional(),
+        deletedAt: z.number().nullable().optional(),
       })
     ),
   }),

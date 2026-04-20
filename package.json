@@ -1,5 +1,6 @@
 {
   "name": "wt-habit-tracker-pwa-monorepo",
+  "version": "1.0.0",
   "private": true,
   "workspaces": [
     "client",
@@ -11,6 +12,7 @@
     "lint": "npm run lint --workspaces",
     "typecheck": "npm run typecheck --workspaces",
     "test": "npm run test --workspaces --if-present",
+    "verify": "npm run typecheck --workspaces && npm run build --workspaces && npm run test --workspaces --if-present",
     "prepare": "husky"
   },
   "devDependencies": {

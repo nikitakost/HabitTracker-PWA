@@ -7,17 +7,20 @@ import { AchievementsBoard } from '@/widgets/AchievementsBoard';
 import { HabitTrackerWidget } from '@/widgets/HabitTrackerWidget';
 import { AppHeader } from '@/widgets/layout/AppHeader';
 import { fetchWithAuth } from '@/shared/api';
+import { useNetworkStatus } from '@/shared/lib';
 
 export const HomePage = () => {
   const { user, logout } = useAuthStore();
-  const { habits } = useHabitStore();
+  const { habits, hasPendingChanges, lastSyncedAt, syncError } = useHabitStore();
   const navigate = useNavigate();
-  const { isPulling, isPushing } = useSync();
+  const { isPulling, isPushing, syncNow } = useSync();
+  const isOnline = useNetworkStatus();
+  const visibleHabits = habits.filter((habit) => !habit.deletedAt);
 
-  const completedToday = habits.filter((habit) =>
+  const completedToday = visibleHabits.filter((habit) =>
     habit.completedDates.includes(new Date().toISOString().slice(0, 10))
   ).length;
-  const totalCheckins = habits.reduce((sum, habit) => sum + habit.completedDates.length, 0);
+  const totalCheckins = visibleHabits.reduce((sum, habit) => sum + habit.completedDates.length, 0);
 
   const handleLogout = async () => {
     try {
@@ -41,8 +44,13 @@ export const HomePage = () => {
   return (
     <div className="min-h-screen app-shell px-4 pb-12 pt-4 sm:px-6 lg:px-8">
       <AppHeader
+        hasPendingChanges={hasPendingChanges}
+        isOnline={isOnline}
         isSyncing={isPulling || isPushing}
+        lastSyncedAt={lastSyncedAt}
         onLogout={handleLogout}
+        onSyncNow={syncNow}
+        syncError={syncError}
         username={user.username}
       />
 
@@ -63,7 +71,7 @@ export const HomePage = () => {
               </div>
               <div className="grid grid-cols-3 gap-3 md:min-w-[18rem]">
                 <div className="rounded-[1.5rem] bg-white/80 p-4 shadow-soft">
-                  <div className="font-display text-3xl text-dark">{habits.length}</div>
+                  <div className="font-display text-3xl text-dark">{visibleHabits.length}</div>
                   <div className="mt-1 text-sm text-muted">habits</div>
                 </div>
                 <div className="rounded-[1.5rem] bg-white/80 p-4 shadow-soft">
@@ -92,7 +100,13 @@ export const HomePage = () => {
               <div className="rounded-[1.4rem] bg-white/80 p-4 shadow-soft">
                 <div className="text-sm font-bold text-dark">Background sync</div>
                 <div className="mt-1 text-sm text-muted">
-                  {isPulling || isPushing ? 'Synchronization is active right now.' : 'Everything is currently in sync.'}
+                  {!isOnline
+                    ? 'Offline mode is active. New changes stay saved locally.'
+                    : hasPendingChanges
+                      ? 'You have local changes waiting for sync.'
+                      : isPulling || isPushing
+                        ? 'Synchronization is active right now.'
+                        : 'Everything is currently in sync.'}
                 </div>
               </div>
               <div className="rounded-[1.4rem] bg-gradient-to-r from-primary to-dark p-4 text-white shadow-glow">

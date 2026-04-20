@@ -8,10 +8,11 @@ export const AchievementsBoard = () => {
 
   const achievements = useMemo(() => {
     const list = [];
-    const totalCheckins = habits.reduce((sum, habit) => sum + habit.completedDates.length, 0);
-    const activeHabits = habits.filter((habit) => habit.completedDates.length > 0).length;
+    const visibleHabits = habits.filter((habit) => !habit.deletedAt);
+    const totalCheckins = visibleHabits.reduce((sum, habit) => sum + habit.completedDates.length, 0);
+    const activeHabits = visibleHabits.filter((habit) => habit.completedDates.length > 0).length;
 
-    if (habits.length > 0) {
+    if (visibleHabits.length > 0) {
       list.push({
         id: 'first-blood',
         name: 'First Blood',
@@ -20,7 +21,7 @@ export const AchievementsBoard = () => {
       });
     }
 
-    if (habits.some((habit) => habit.completedDates.length >= 3)) {
+    if (visibleHabits.some((habit) => habit.completedDates.length >= 3)) {
       list.push({
         id: 'streak-3',
         name: 'Consistency',
@@ -29,7 +30,7 @@ export const AchievementsBoard = () => {
       });
     }
 
-    if (habits.some((habit) => habit.completedDates.length >= 7)) {
+    if (visibleHabits.some((habit) => habit.completedDates.length >= 7)) {
       list.push({
         id: 'streak-7',
         name: 'Champion',
@@ -38,7 +39,7 @@ export const AchievementsBoard = () => {
       });
     }
 
-    if (habits.length >= 5) {
+    if (visibleHabits.length >= 5) {
       list.push({
         id: 'habit-architect',
         name: 'Architect',

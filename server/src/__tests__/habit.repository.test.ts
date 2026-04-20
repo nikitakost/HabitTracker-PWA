@@ -20,6 +20,7 @@ describe('HabitRepository', () => {
         title: 'Read',
         completedDates: '[]',
         updatedAt: new Date(),
+        deletedAt: null,
       }),
     ]);
 
@@ -42,6 +43,7 @@ describe('HabitRepository', () => {
         title: 'Read',
         completedDates: '[]',
         updatedAt: new Date(),
+        deletedAt: null,
       }),
       repository.createOperation({
         id: 'habit-2',
@@ -49,6 +51,7 @@ describe('HabitRepository', () => {
         title: 'Write',
         completedDates: '[]',
         updatedAt: new Date(),
+        deletedAt: null,
       }),
     ]);
 
@@ -72,6 +75,7 @@ describe('HabitRepository', () => {
         title: 'Read',
         completedDates: '[]',
         updatedAt: new Date('2026-04-20T09:00:00.000Z'),
+        deletedAt: null,
       }),
     ]);
 
@@ -80,6 +84,7 @@ describe('HabitRepository', () => {
         title: 'Read more',
         completedDates: '["2026-04-20"]',
         updatedAt: new Date('2026-04-20T10:00:00.000Z'),
+        deletedAt: null,
       }),
     ]);
 
@@ -88,7 +93,7 @@ describe('HabitRepository', () => {
     expect(habits[0].completedDates).toBe('["2026-04-20"]');
   });
 
-  it('deletes habits missing from incoming snapshot', async () => {
+  it('updates deletedAt for soft delete tombstones', async () => {
     const user = await prisma.user.create({
       data: {
         username: 'habit-delete-owner',
@@ -103,20 +108,15 @@ describe('HabitRepository', () => {
         title: 'Read',
         completedDates: '[]',
         updatedAt: new Date(),
-      }),
-      repository.createOperation({
-        id: 'habit-2',
-        userId: user.id,
-        title: 'Write',
-        completedDates: '[]',
-        updatedAt: new Date(),
+        deletedAt: null,
       }),
     ]);
 
-    await repository.transaction([repository.deleteMissingByUserIdOperation(user.id, ['habit-2'])]);
+    const deletedAt = new Date('2026-04-20T11:00:00.000Z');
+    await repository.transaction([repository.updateOperation('habit-1', { deletedAt })]);
 
     const habits = await repository.findByUserId(user.id);
     expect(habits).toHaveLength(1);
-    expect(habits[0].id).toBe('habit-2');
+    expect(habits[0].deletedAt).toEqual(deletedAt);
   });
 });
