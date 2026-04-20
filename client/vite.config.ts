@@ -14,9 +14,6 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate', 
-      devOptions: {
-        enabled: true
-      },
       includeAssets: ['favicon.svg', 'icon-192x192.png', 'icon-512x512.png', 'icons.svg', 'sprite.svg'],
       manifest: {
         name: 'My Habit Tracker',

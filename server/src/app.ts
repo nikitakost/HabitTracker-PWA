@@ -10,9 +10,21 @@ import syncRoutes from './routes/sync';
 dotenv.config();
 
 const app = express();
+const authRateLimitMax = Number(process.env.AUTH_RATE_LIMIT_MAX || 60);
+const allowedOrigins = (process.env.CLIENT_URLS || process.env.CLIENT_URL || 'http://localhost:5173,http://localhost:4173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 const corsOptions = {
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
 };
 app.use(cors(corsOptions));
@@ -21,7 +33,7 @@ app.use(cookieParser());
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 60, // Limit each IP to 60 requests per `window` (here, per 15 minutes)
+  max: Number.isFinite(authRateLimitMax) ? authRateLimitMax : 60,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests from this IP, please try again after 15 minutes' },

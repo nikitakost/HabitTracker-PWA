@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useHabitStore } from '@/entities/habit';
 import { useAuthStore } from '@/entities/user';
 import { useSync } from '@/features/sync-data';
-import { fetchWithAuth } from '@/shared/api';
 import { AchievementsBoard } from '@/widgets/AchievementsBoard';
 import { HabitTrackerWidget } from '@/widgets/HabitTrackerWidget';
 import { AppHeader } from '@/widgets/layout/AppHeader';
+import { fetchWithAuth } from '@/shared/api';
 
 export const HomePage = () => {
   const { user, logout } = useAuthStore();
@@ -96,8 +96,10 @@ export const HomePage = () => {
                 </div>
               </div>
               <div className="rounded-[1.4rem] bg-gradient-to-r from-primary to-dark p-4 text-white shadow-glow">
-                <div className="text-sm font-bold">Account</div>
-                <div className="mt-1 text-sm text-white/80">Signed in as {user.username}</div>
+                <div className="text-sm font-bold">Profile page</div>
+                <div className="mt-1 text-sm text-white/80">
+                  Account details, identity and personal stats live in the dedicated profile screen.
+                </div>
               </div>
             </div>
           </div>
