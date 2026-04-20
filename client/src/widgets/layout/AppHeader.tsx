@@ -1,4 +1,5 @@
 import { Button } from '@/shared/ui';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface AppHeaderProps {
   isSyncing: boolean;
@@ -7,6 +8,8 @@ interface AppHeaderProps {
 }
 
 export const AppHeader = ({ isSyncing, onLogout, username }: AppHeaderProps) => {
+  const navigate = useNavigate();
+
   return (
     <header className="glass-panel sticky top-4 z-50 mx-auto flex max-w-6xl items-center justify-between rounded-[1.8rem] border border-white/80 px-4 py-4 shadow-panel sm:px-6">
       <div>
@@ -14,7 +17,7 @@ export const AppHeader = ({ isSyncing, onLogout, username }: AppHeaderProps) => 
           Daily rhythm dashboard
         </div>
         <div className="mt-1 font-display text-2xl text-dark">
-          Hello, <span className="text-primary">{username}</span>
+          Hello, <Link to="/profile" className="text-primary hover:text-dark transition-colors">{username}</Link>
         </div>
       </div>
       <div className="flex gap-4 items-center">
@@ -27,6 +30,9 @@ export const AppHeader = ({ isSyncing, onLogout, username }: AppHeaderProps) => 
             <span className="text-sm font-semibold text-muted">Syncing...</span>
           </div>
         )}
+        <Button type="button" variant="secondary" onClick={() => navigate('/profile')}>
+          Profile
+        </Button>
         <Button type="button" variant="ghost" onClick={() => void onLogout()}>
           Logout
         </Button>

@@ -61,19 +61,26 @@ export const useHabitStore = create<HabitState>()(
         return { habits: newHabits };
       }),
       setHabits: (serverHabits) => set((state) => {
-        // Implement LWW on client side too when receiving from server
-        // If a server habit is newer, replace local. If local is newer, keep local.
         const merged = [...state.habits];
+        let hasChanges = false;
+
         for (const sHabit of serverHabits) {
           const idx = merged.findIndex(h => h.id === sHabit.id);
           if (idx >= 0) {
             if (sHabit.updatedAt > merged[idx].updatedAt) {
               merged[idx] = sHabit;
+              hasChanges = true;
             }
           } else {
             merged.push(sHabit);
+            hasChanges = true;
           }
         }
+
+        if (!hasChanges && merged.length === state.habits.length) {
+          return state;
+        }
+
         return { habits: merged };
       })
     }),

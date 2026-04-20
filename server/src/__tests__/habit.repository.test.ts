@@ -87,4 +87,36 @@ describe('HabitRepository', () => {
     expect(habits[0].title).toBe('Read more');
     expect(habits[0].completedDates).toBe('["2026-04-20"]');
   });
+
+  it('deletes habits missing from incoming snapshot', async () => {
+    const user = await prisma.user.create({
+      data: {
+        username: 'habit-delete-owner',
+        password: 'hashed-password',
+      },
+    });
+
+    await repository.transaction([
+      repository.createOperation({
+        id: 'habit-1',
+        userId: user.id,
+        title: 'Read',
+        completedDates: '[]',
+        updatedAt: new Date(),
+      }),
+      repository.createOperation({
+        id: 'habit-2',
+        userId: user.id,
+        title: 'Write',
+        completedDates: '[]',
+        updatedAt: new Date(),
+      }),
+    ]);
+
+    await repository.transaction([repository.deleteMissingByUserIdOperation(user.id, ['habit-2'])]);
+
+    const habits = await repository.findByUserId(user.id);
+    expect(habits).toHaveLength(1);
+    expect(habits[0].id).toBe('habit-2');
+  });
 });

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { fetchWithAuth } from '@/shared/api';
 import { useHabitStore } from '@/entities/habit';
 import { useAuthStore } from '@/entities/user';
@@ -6,8 +6,6 @@ import { useAuthStore } from '@/entities/user';
 export const useSync = () => {
   const { user } = useAuthStore();
   const { habits, setHabits } = useHabitStore();
-
-  const queryClient = useQueryClient();
 
   const pushMutation = useMutation({
     mutationFn: async () => {
@@ -17,9 +15,6 @@ export const useSync = () => {
         body: JSON.stringify({ habits }),
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sync-pull'] });
-    }
   });
 
   const pullQuery = useQuery({
@@ -33,9 +28,13 @@ export const useSync = () => {
       return data;
     },
     enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   return {
+    pullHabits: pullQuery.refetch,
     pushHabits: pushMutation.mutate,
     isPushing: pushMutation.isPending,
     isPulling: pullQuery.isLoading,

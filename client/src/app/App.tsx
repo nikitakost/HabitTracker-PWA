@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthPage } from '@/pages/auth/AuthPage';
 import { HomePage } from '@/pages/home/HomePage';
+import { ProfilePage } from '@/pages/profile/ProfilePage';
 import { useAuthStore } from '@/entities/user';
 import { fetchWithAuth } from '@/shared/api';
 
@@ -20,15 +21,30 @@ export const App = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
+      const savedUser = useAuthStore.getState().user;
+      const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+
+      if (savedUser) {
+        setChecking(false);
+        return;
+      }
+
+      if (isOffline) {
+        logout();
+        setChecking(false);
+        return;
+      }
+
       try {
-        const data = await fetchWithAuth<{ id: string; username: string }>('/auth/me');
+        const data = await fetchWithAuth<{ id: string; username: string; createdAt?: string }>('/auth/me');
         setUser(data);
-      } catch (e) {
+      } catch (error) {
         logout();
       } finally {
         setChecking(false);
       }
     };
+
     checkAuth();
   }, [setUser, logout, setChecking]);
 
@@ -41,6 +57,7 @@ export const App = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={user ? <HomePage /> : <Navigate to="/auth" />} />
+          <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/auth" />} />
           <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/" />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

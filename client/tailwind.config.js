@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Manrope"', 'sans-serif'],
-        display: ['"Space Grotesk"', 'sans-serif'],
+        sans: ['"Aptos"', '"Segoe UI"', '"Trebuchet MS"', 'sans-serif'],
+        display: ['"Bahnschrift"', '"Trebuchet MS"', '"Segoe UI"', 'sans-serif'],
       },
       colors: {
         primary: '#0f766e',

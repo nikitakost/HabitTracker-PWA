@@ -8,6 +8,8 @@ export const AchievementsBoard = () => {
 
   const achievements = useMemo(() => {
     const list = [];
+    const totalCheckins = habits.reduce((sum, habit) => sum + habit.completedDates.length, 0);
+    const activeHabits = habits.filter((habit) => habit.completedDates.length > 0).length;
 
     if (habits.length > 0) {
       list.push({
@@ -33,6 +35,33 @@ export const AchievementsBoard = () => {
         name: 'Champion',
         desc: 'Completed 7 times',
         icon: 'icon-cup',
+      });
+    }
+
+    if (habits.length >= 5) {
+      list.push({
+        id: 'habit-architect',
+        name: 'Architect',
+        desc: 'Built a board with 5 habits',
+        icon: 'icon-cup',
+      });
+    }
+
+    if (activeHabits >= 3) {
+      list.push({
+        id: 'multi-focus',
+        name: 'Multi-Focus',
+        desc: 'Progressed in 3 different habits',
+        icon: 'icon-streak-3',
+      });
+    }
+
+    if (totalCheckins >= 15) {
+      list.push({
+        id: 'marathon',
+        name: 'Marathon',
+        desc: 'Reached 15 total check-ins',
+        icon: 'icon-first-blood',
       });
     }
 
