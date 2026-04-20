@@ -1,59 +1,122 @@
-# 📱 Офлайн-трекер звичок (Progressive Web App)
+# Habit Tracker PWA
 
-Цей проєкт — демонстраційний веб-застосунок (PWA), створений у рамках навчально-дослідницької роботи. Він демонструє сучасні можливості веб-технологій: роботу без підключення до інтернету (Offline-first), кешування ресурсів за допомогою Service Worker та можливість встановлення на пристрій як повноцінної нативної програми.
+Full-stack monorepo for an offline-first habit tracker with a componentized React client and a layered Node.js backend.
 
-## 🚀 Основний функціонал
+## What is inside
 
-- **Офлайн-режим:** Застосунок повністю працює без інтернету. Всі дані миттєво зберігаються у внутрішню базу даних браузера (IndexedDB).
-- **Встановлення (Add to Home Screen):** Застосунок можна встановити на смартфон або десктоп прямо з браузера (через власну кнопку або меню браузера).
-- **Відстеження прогресу:** Візуалізація виконання звичок за останні 7 днів.
-- **Управління звичками:** Створення, відмітка виконання та видалення звичок.
+- `client` - React + Vite PWA frontend organized around `app / pages / widgets / features / entities / shared`
+- `server` - Express + TypeScript backend with controller/service/repository layering and a composition-root style module setup
+- `docs` - project documentation for architecture, API, testing, and development workflow
 
-## 🛠 Стек технологій
+## Core capabilities
 
-- **Фронтенд:** React.js
-- **Збірка:** Vite
-- **PWA Інструменти:** `vite-plugin-pwa` (на базі Workbox)
-- **База даних:** `localforage` (асинхронне сховище на базі IndexedDB)
+- offline-first local habit storage
+- background sync with the backend
+- cookie-based JWT authentication
+- reusable UI primitives and decomposed widgets
+- Prisma persistence with SQLite
+- unit, repository, middleware, controller, service, and integration tests
 
----
+## Architecture summary
 
-## 💻 Інструкція зі встановлення та запуску
+### Backend
 
-Щоб розгорнути проєкт локально на своєму комп'ютері, виконайте наступні кроки.
+The backend follows a layered structure inspired by modular Nest-style responsibility separation:
 
-### 1. Попередні вимоги
-Переконайтеся, що на вашому комп'ютері встановлено [Node.js](https://nodejs.org/) (разом із пакетним менеджером `npm`).
+- `routes` expose HTTP endpoints
+- `controllers` translate HTTP requests and responses
+- `services` contain business rules
+- `repositories` contain persistence logic
+- `modules` wire dependencies together
+- `infrastructure` owns shared technical providers such as Prisma
+- `common` contains reusable middleware, error handling, and shared types
 
-### 2. Ініціалізація проєкту
-Відкрийте термінал у папці з проєктом та встановіть всі необхідні залежності. 
-*(Примітка: використовується прапорець `--legacy-peer-deps` для уникнення конфліктів версій між Vite 8 та PWA-плагіном).*
+### Frontend
 
-```bash
-npm install --legacy-peer-deps
-```
+The frontend follows a Feature-Sliced Design style structure:
 
-## 💻 Запуск, збірка та тестування
-### 1. Режим розробки (Development)
-Використовується для написання коду. Зміни миттєво відображаються в браузері (Hot Reload).
+- `app` bootstraps routing and providers
+- `pages` compose full screens
+- `widgets` assemble larger UI blocks
+- `features` contain user scenarios and orchestration logic
+- `entities` contain domain state
+- `shared` contains UI primitives, API helpers, and utilities
 
-```bash
-npm run dev
-```
-Локальний сервер: http://localhost:5173/
+## Getting started
 
-### 2. Збірка проєкту (Production Build)
-Підготовка проєкту до релізу. Інструмент Vite компілює React-код, мініфікує файли та повноцінно генерує Service Worker для офлайн-роботи.
-```bash
-npm run build
-```
-
-### 3. Тестування PWA (Preview)
-Симуляція реального продакшен-хостингу для перевірки готової збірки. Саме в цьому режимі необхідно тестувати встановлення застосунку та роботу без інтернету.
+### 1. Install dependencies
 
 ```bash
-npm run preview
+npm install
 ```
-Локальний сервер: http://localhost:4173/
 
+### 2. Configure environment
 
+Create the following files:
+
+- `client/.env`
+- `server/.env`
+
+Recommended variables:
+
+```env
+# client/.env
+VITE_API_URL=http://localhost:3000/api
+```
+
+```env
+# server/.env
+DATABASE_URL=file:./dev.db
+JWT_SECRET=replace-this-secret
+CLIENT_URL=http://localhost:5173
+PORT=3000
+```
+
+### 3. Prepare the database
+
+```bash
+npm run prisma:push --workspace=server
+```
+
+## Development
+
+Run the frontend:
+
+```bash
+npm run dev --workspace=client
+```
+
+Run the backend:
+
+```bash
+npm run dev --workspace=server
+```
+
+## Verification
+
+Type-check the whole workspace:
+
+```bash
+npm run typecheck --workspaces
+```
+
+Build the whole workspace:
+
+```bash
+npm run build --workspaces
+```
+
+Run backend tests:
+
+```bash
+npm test --workspace=server
+```
+
+## Documentation
+
+- [Architecture](./docs/architecture.md)
+- [Backend](./docs/backend.md)
+- [Frontend](./docs/frontend.md)
+- [API](./docs/api.md)
+- [Testing](./docs/testing.md)
+- [Development](./docs/development.md)
