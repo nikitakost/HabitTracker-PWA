@@ -15,13 +15,12 @@ export class SyncService {
     const existingHabits = await this.habitRepository.findByIdsAndUserId(userId, incomingIds);
     const existingMap = new Map(existingHabits.map((habit) => [habit.id, habit]));
 
-    const operations: Prisma.PrismaPromise<unknown>[] = [
-      this.habitRepository.deleteMissingByUserIdOperation(userId, incomingIds),
-    ];
+    const operations: Prisma.PrismaPromise<unknown>[] = [];
     
     for (const habit of habits) {
       const existing = existingMap.get(habit.id);
       const incomingDate = new Date(habit.updatedAt || Date.now());
+      const deletedAt = habit.deletedAt ? new Date(habit.deletedAt) : null;
 
       if (!existing) {
         operations.push(this.habitRepository.createOperation({
@@ -30,12 +29,14 @@ export class SyncService {
           title: habit.title,
           completedDates: JSON.stringify(habit.completedDates || []),
           updatedAt: incomingDate,
+          deletedAt,
         }));
       } else if (incomingDate > existing.updatedAt) {
         operations.push(this.habitRepository.updateOperation(habit.id, {
           title: habit.title,
           completedDates: JSON.stringify(habit.completedDates || []),
           updatedAt: incomingDate,
+          deletedAt,
         }));
       }
     }
@@ -52,6 +53,7 @@ export class SyncService {
       ...habit,
       completedDates: JSON.parse(habit.completedDates) as string[],
       updatedAt: habit.updatedAt.getTime(),
+      deletedAt: habit.deletedAt?.getTime() ?? null,
     }));
 
     return formattedHabits;

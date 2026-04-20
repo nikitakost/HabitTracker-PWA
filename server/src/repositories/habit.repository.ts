@@ -18,20 +18,11 @@ export class HabitRepository {
     return this.prisma.$transaction(operations);
   }
 
-  createOperation(data: Omit<Habit, 'createdAt'>) {
+  createOperation(data: Prisma.HabitUncheckedCreateInput) {
     return this.prisma.habit.create({ data });
   }
 
-  updateOperation(id: string, data: Partial<Habit>) {
+  updateOperation(id: string, data: Prisma.HabitUncheckedUpdateInput) {
     return this.prisma.habit.update({ where: { id }, data });
-  }
-
-  deleteMissingByUserIdOperation(userId: string, incomingIds: string[]) {
-    return this.prisma.habit.deleteMany({
-      where: {
-        userId,
-        ...(incomingIds.length > 0 ? { id: { notIn: incomingIds } } : {}),
-      },
-    });
   }
 }

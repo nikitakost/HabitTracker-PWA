@@ -54,7 +54,7 @@ describe('Sync API', () => {
     expect(response.body.error).toBe('Authentication required');
   });
 
-  it('removes habits missing from the next snapshot', async () => {
+  it('keeps habits missing from the next snapshot', async () => {
     await request(app)
       .post('/api/sync/push')
       .set('Authorization', `Bearer ${token}`)
@@ -77,7 +77,34 @@ describe('Sync API', () => {
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(200);
+    expect(response.body.habits).toHaveLength(2);
+    expect(response.body.habits.map((habit: { id: string }) => habit.id)).toEqual(expect.arrayContaining(['1', '2']));
+  });
+
+  it('syncs deleted habits as tombstones', async () => {
+    const deletedAt = Date.now() + 2;
+
+    await request(app)
+      .post('/api/sync/push')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        habits: [
+          {
+            id: '1',
+            title: 'Test Habit 1',
+            completedDates: ['2023-10-01'],
+            updatedAt: deletedAt,
+            deletedAt,
+          },
+        ],
+      });
+
+    const response = await request(app)
+      .get('/api/sync/pull')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
     expect(response.body.habits).toHaveLength(1);
-    expect(response.body.habits[0].id).toBe('2');
+    expect(response.body.habits[0].deletedAt).toBe(deletedAt);
   });
 });

@@ -55,6 +55,7 @@ describe('SyncController', () => {
         completedDates: [],
         createdAt: new Date(),
         updatedAt: Date.now(),
+        deletedAt: null,
       },
     ]);
 

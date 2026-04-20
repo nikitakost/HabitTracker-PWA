@@ -1,24 +1,37 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useHabitStore } from '@/entities/habit';
 import { useSync } from '@/features/sync-data';
-import { getFormattedDate, getLastNDays } from '@/shared/lib';
+import { ConfirmDialog } from '@/shared/ui';
+import { getFormattedDate, getLastNDays, useNetworkStatus } from '@/shared/lib';
 import { HabitEmptyState } from '@/widgets/habit-tracker/HabitEmptyState';
 import { HabitForm } from '@/widgets/habit-tracker/HabitForm';
 import { HabitItemCard } from '@/widgets/habit-tracker/HabitItemCard';
 
 export const HabitTrackerWidget = () => {
-  const { habits, isLoaded, addHabit, deleteHabit, toggleHabitDate } = useHabitStore();
+  const {
+    habits,
+    hasPendingChanges,
+    isLoaded,
+    lastSyncedAt,
+    syncError,
+    addHabit,
+    deleteHabit,
+    toggleHabitDate,
+  } = useHabitStore();
   const [newTitle, setNewTitle] = useState('');
+  const [habitToDelete, setHabitToDelete] = useState<string | null>(null);
   const { pushHabits } = useSync();
+  const isOnline = useNetworkStatus();
 
   const today = useMemo(() => getFormattedDate(new Date()), []);
   const last7Days = useMemo(() => getLastNDays(7), []);
+  const visibleHabits = useMemo(() => habits.filter((habit) => !habit.deletedAt), [habits]);
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && isOnline && hasPendingChanges) {
       pushHabits();
     }
-  }, [habits, isLoaded, pushHabits]);
+  }, [hasPendingChanges, isLoaded, isOnline, pushHabits]);
 
   const handleAdd = (event: React.FormEvent) => {
     event.preventDefault();
@@ -28,11 +41,21 @@ export const HabitTrackerWidget = () => {
     setNewTitle('');
   };
 
-  const handleDelete = (habitId: string) => {
-    if (window.confirm('Are you sure you want to delete this habit?')) {
-      deleteHabit(habitId);
-    }
+  const handleConfirmDelete = () => {
+    if (!habitToDelete) return;
+    deleteHabit(habitToDelete);
+    setHabitToDelete(null);
   };
+
+  const syncLabel = syncError
+    ? 'Sync failed'
+    : hasPendingChanges
+      ? 'Saved locally'
+      : lastSyncedAt
+        ? `Synced ${new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit' }).format(lastSyncedAt)}`
+        : isOnline
+          ? 'Ready to sync'
+          : 'Offline mode';
 
   if (!isLoaded) {
     return (
@@ -54,24 +77,32 @@ export const HabitTrackerWidget = () => {
           </h2>
         </div>
         <div className="rounded-full bg-white/75 px-4 py-2 text-sm font-semibold text-muted shadow-soft">
-          Last 7 days view
+          {syncLabel}
         </div>
       </div>
       <HabitForm value={newTitle} onChange={setNewTitle} onSubmit={handleAdd} />
       <div className="flex flex-col gap-4">
-        {habits.map((habit) => (
+        {visibleHabits.map((habit) => (
           <HabitItemCard
             key={habit.id}
             habit={habit}
             isCompletedToday={habit.completedDates.includes(today)}
             last7Days={last7Days}
-            onDelete={handleDelete}
+            onDelete={setHabitToDelete}
             onToggle={toggleHabitDate}
             today={today}
           />
         ))}
-        {habits.length === 0 && <HabitEmptyState />}
+        {visibleHabits.length === 0 && <HabitEmptyState />}
       </div>
+      <ConfirmDialog
+        confirmLabel="Delete"
+        description="The habit will disappear from this device now and sync as a soft delete when the connection is available."
+        isOpen={habitToDelete !== null}
+        title="Delete this habit?"
+        onCancel={() => setHabitToDelete(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </section>
   );
 };

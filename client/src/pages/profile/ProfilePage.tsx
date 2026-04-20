@@ -29,11 +29,12 @@ export const ProfilePage = () => {
   }, [navigate, user]);
 
   const stats = useMemo(() => {
-    const totalCheckins = habits.reduce((sum, habit) => sum + habit.completedDates.length, 0);
-    const activeHabits = habits.filter((habit) => habit.completedDates.length > 0).length;
-    const bestStreak = habits.reduce((max, habit) => Math.max(max, habit.completedDates.length), 0);
+    const visibleHabits = habits.filter((habit) => !habit.deletedAt);
+    const totalCheckins = visibleHabits.reduce((sum, habit) => sum + habit.completedDates.length, 0);
+    const activeHabits = visibleHabits.filter((habit) => habit.completedDates.length > 0).length;
+    const bestStreak = visibleHabits.reduce((max, habit) => Math.max(max, habit.completedDates.length), 0);
 
-    return { activeHabits, bestStreak, totalCheckins };
+    return { activeHabits, bestStreak, totalCheckins, visibleHabitsCount: visibleHabits.length };
   }, [habits]);
 
   if (!user) return null;
@@ -90,7 +91,7 @@ export const ProfilePage = () => {
             </div>
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="rounded-[1.4rem] bg-surface/80 p-4 shadow-soft">
-                <div className="font-display text-3xl text-dark">{habits.length}</div>
+                <div className="font-display text-3xl text-dark">{stats.visibleHabitsCount}</div>
                 <div className="mt-1 text-sm text-muted">habits created</div>
               </div>
               <div className="rounded-[1.4rem] bg-surface/80 p-4 shadow-soft">

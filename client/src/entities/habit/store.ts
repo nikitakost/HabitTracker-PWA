@@ -7,14 +7,21 @@ export interface Habit {
   title: string;
   completedDates: string[]; // YYYY-MM-DD
   updatedAt: number; // timestamp
+  deletedAt?: number | null;
 }
 
 interface HabitState {
   habits: Habit[];
   isLoaded: boolean;
+  lastSyncedAt: number | null;
+  hasPendingChanges: boolean;
+  syncError: string | null;
   setLoaded: () => void;
   addHabit: (title: string) => void;
   deleteHabit: (id: string) => void;
+  clearSyncError: () => void;
+  markSynced: () => void;
+  markSyncError: (message: string) => void;
   toggleHabitDate: (id: string, date: string) => void;
   setHabits: (habits: Habit[]) => void;
 }
@@ -37,13 +44,27 @@ export const useHabitStore = create<HabitState>()(
     (set) => ({
       habits: [],
       isLoaded: false,
+      lastSyncedAt: null,
+      hasPendingChanges: false,
+      syncError: null,
       setLoaded: () => set({ isLoaded: true }),
       addHabit: (title) => set((state) => ({
-        habits: [{ id: crypto.randomUUID(), title, completedDates: [], updatedAt: Date.now() }, ...state.habits]
+        habits: [{ id: crypto.randomUUID(), title, completedDates: [], updatedAt: Date.now(), deletedAt: null }, ...state.habits],
+        hasPendingChanges: true,
+        syncError: null,
       })),
       deleteHabit: (id) => set((state) => ({
-        habits: state.habits.filter(h => h.id !== id)
+        habits: state.habits.map((habit) =>
+          habit.id === id
+            ? { ...habit, deletedAt: Date.now(), updatedAt: Date.now() }
+            : habit
+        ),
+        hasPendingChanges: true,
+        syncError: null,
       })),
+      clearSyncError: () => set({ syncError: null }),
+      markSynced: () => set({ hasPendingChanges: false, lastSyncedAt: Date.now(), syncError: null }),
+      markSyncError: (message) => set({ syncError: message }),
       toggleHabitDate: (id, date) => set((state) => {
         const newHabits = state.habits.map(habit => {
           if (habit.id === id) {
@@ -53,12 +74,13 @@ export const useHabitStore = create<HabitState>()(
               completedDates: hasDate 
                 ? habit.completedDates.filter(d => d !== date)
                 : [...habit.completedDates, date],
-              updatedAt: Date.now()
+              updatedAt: Date.now(),
+              deletedAt: habit.deletedAt ?? null,
             };
           }
           return habit;
         });
-        return { habits: newHabits };
+        return { habits: newHabits, hasPendingChanges: true, syncError: null };
       }),
       setHabits: (serverHabits) => set((state) => {
         const merged = [...state.habits];
