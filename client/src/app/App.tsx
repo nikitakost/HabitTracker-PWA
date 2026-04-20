@@ -23,14 +23,21 @@ export const App = () => {
       try {
         const data = await fetchWithAuth<{ id: string; username: string }>('/auth/me');
         setUser(data);
-      } catch (e) {
+      } catch (error) {
+        const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+
+        if (isOffline && user) {
+          return;
+        }
+
         logout();
       } finally {
         setChecking(false);
       }
     };
+
     checkAuth();
-  }, [setUser, logout, setChecking]);
+  }, [setUser, logout, setChecking, user]);
 
   if (isChecking) {
     return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-pulse text-gray-500 font-medium">Checking authentication...</div></div>;

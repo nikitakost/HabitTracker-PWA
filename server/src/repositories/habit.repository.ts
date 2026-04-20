@@ -14,7 +14,7 @@ export class HabitRepository {
     });
   }
 
-  async transaction<T>(operations: Prisma.PrismaPromise<T>[]): Promise<T[]> {
+  async transaction(operations: Prisma.PrismaPromise<unknown>[]): Promise<unknown[]> {
     return this.prisma.$transaction(operations);
   }
 
@@ -24,5 +24,14 @@ export class HabitRepository {
 
   updateOperation(id: string, data: Partial<Habit>) {
     return this.prisma.habit.update({ where: { id }, data });
+  }
+
+  deleteMissingByUserIdOperation(userId: string, incomingIds: string[]) {
+    return this.prisma.habit.deleteMany({
+      where: {
+        userId,
+        ...(incomingIds.length > 0 ? { id: { notIn: incomingIds } } : {}),
+      },
+    });
   }
 }

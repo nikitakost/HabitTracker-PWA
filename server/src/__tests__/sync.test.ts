@@ -53,4 +53,31 @@ describe('Sync API', () => {
     expect(response.status).toBe(401);
     expect(response.body.error).toBe('Authentication required');
   });
+
+  it('removes habits missing from the next snapshot', async () => {
+    await request(app)
+      .post('/api/sync/push')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        habits: [
+          { id: '1', title: 'Test Habit 1', completedDates: ['2023-10-01'], updatedAt: Date.now() },
+          { id: '2', title: 'Test Habit 2', completedDates: [], updatedAt: Date.now() },
+        ],
+      });
+
+    await request(app)
+      .post('/api/sync/push')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        habits: [{ id: '2', title: 'Test Habit 2', completedDates: [], updatedAt: Date.now() + 1 }],
+      });
+
+    const response = await request(app)
+      .get('/api/sync/pull')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.habits).toHaveLength(1);
+    expect(response.body.habits[0].id).toBe('2');
+  });
 });

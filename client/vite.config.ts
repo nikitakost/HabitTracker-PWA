@@ -17,7 +17,7 @@ export default defineConfig({
       devOptions: {
         enabled: true
       },
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'], 
+      includeAssets: ['favicon.svg', 'icon-192x192.png', 'icon-512x512.png', 'icons.svg', 'sprite.svg'],
       manifest: {
         name: 'My Habit Tracker',
         short_name: 'Tracker',
@@ -39,6 +39,7 @@ export default defineConfig({
         ]
       },
       workbox: {
+        navigateFallback: '/index.html',
         runtimeCaching: [
           {
             urlPattern: /\/api\/sync\/push/,

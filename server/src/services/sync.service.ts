@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { AppError } from '../common/errors/app-error';
 import { HabitRepository } from '../repositories/habit.repository';
 import { HabitSyncPayload } from '../types/habit';
@@ -14,7 +15,9 @@ export class SyncService {
     const existingHabits = await this.habitRepository.findByIdsAndUserId(userId, incomingIds);
     const existingMap = new Map(existingHabits.map((habit) => [habit.id, habit]));
 
-    const operations = [];
+    const operations: Prisma.PrismaPromise<unknown>[] = [
+      this.habitRepository.deleteMissingByUserIdOperation(userId, incomingIds),
+    ];
     
     for (const habit of habits) {
       const existing = existingMap.get(habit.id);
@@ -37,9 +40,7 @@ export class SyncService {
       }
     }
 
-    if (operations.length > 0) {
-      await this.habitRepository.transaction(operations);
-    }
+    await this.habitRepository.transaction(operations);
     
     return { success: true, message: 'Habits synced to server successfully' };
   }
